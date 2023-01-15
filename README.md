@@ -1,6 +1,9 @@
 # plugins-installer
 自动安装koishi.yml中的插件
 
+[![npm](https://img.shields.io/npm/v/koishi-plugins-installer?style=flat-square)](https://www.npmjs.com/package/koishi-plugins-installer)
+
+
 ## 环境要求
 
 ### 1.node
