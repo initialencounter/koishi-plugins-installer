@@ -1,3 +1,4 @@
+const https_1 = require('https');
 const spawn = require('child_process').spawn;
 const Yml2arr = /** @class */ (function () {
     // 构造函数 
@@ -28,10 +29,10 @@ const Yml2arr = /** @class */ (function () {
                         plugins_off.push(i);
                     });
                 } else {
-                    if(i.indexOf(':')==-1){
+                    if (i.indexOf(':') == -1) {
                         i = i
-                    }else{
-                        i = i.slice(0,i.indexOf(':'))
+                    } else {
+                        i = i.slice(0, i.indexOf(':'))
                     }
                     if (i.slice(0, 1) == '~') {
 
@@ -47,35 +48,43 @@ const Yml2arr = /** @class */ (function () {
     return Yml2arr;
 }());
 
-if (require.main === module) {
-    const ls = new Yml2arr("koishi.yml")
-    console.log(ls.plugins_on)
-    console.log(ls.plugins_off)
-    const pkg_arr = ls.plugins_on
-    pkg_arr.forEach((i) => {
-        var spawn_execution = spawn('npm', ["i", `koishi-plugin-${i}`]);
-        spawn_execution.stdout.on('data', function (data) {
-            console.log('stdout: ' + data);
-        });
-    })
+// spawn cmd args
+function install(pkg_name){
+    var spawn_execution = spawn('npm', ["i", pkg_name]);
+    spawn_execution.stdout.on('data', function (data) {
+        console.log('stdout: ' + data);
+    });
 }
-            });
-            return [plugins_on, plugins_off];
+
+// get full name and call install fnc
+function package_search_install (plugin_name) {
+    var i = plugin_name
+    https_1.get(`https://www.npmjs.com/package/koishi-plugin-${i}`, (res) => {
+        if (res.statusCode == 200) {
+            console.log(`koishi-plugin-${i} Installing...`)
+            install(`koishi-plugin-${i}`)
+        } else {
+            https_1.get(`https://www.npmjs.com/package/@koishijs/plugin-${i}`, (res) => {
+                if (res.statusCode == 200) {
+                    console.log(`@koishijs/plugin-${i} Installing...`)
+                    install( `@koishijs/plugin-${i}`)
+                }else{
+                    console.log(`${i} install failed`)
+                }
+            })
         }
-    }
-    return Yml2arr;
-}());
+        
 
-if (require.main === module) {
-    const ls = new Yml2arr("./koishi.yml")
-    console.log(ls.plugins_on)
-    console.log(ls.plugins_off)
-    const pkg_arr = ls.plugins_on
-    pkg_arr.forEach((i) => {
-        var spawn_execution = spawn('npm', ["i", `koishi-plugin-${i}`]);
-        spawn_execution.stdout.on('data', function (data) {
-            console.log('stdout: ' + data);
-        });
     })
 }
 
+
+// List plug-ins
+const ls = new Yml2arr("koishi.yml")
+console.log(ls.plugins_off)
+console.log(ls.plugins_on)
+const pkg_arr = ls.plugins_on
+pkg_arr.forEach((i) => {
+    package_search_install(i)
+})
+// package_search_install('auth')
